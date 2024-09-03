@@ -3,6 +3,7 @@ Exports analysis data from a BN database to a bnida JSON file
 """
 
 import json
+import re
 from binaryninja import SaveFileNameField, get_form_input, BackgroundTaskThread, types
 from collections import OrderedDict
 
@@ -52,8 +53,16 @@ class ExportInBackground(BackgroundTaskThread):
 
         symbols = {}
         for symbol in self.bv.get_symbols():
-            symbols[symbol.address] = symbol.name
+            symbols[symbol.address] = self.remove_ida_incompatible_symbol_chars(symbol.name)
         return symbols
+
+
+   def remove_ida_incompatible_symbol_chars(self, symbol):
+       """
+       Removes characters that are incompatible with ida symbols.
+       """
+       return re.sub("\s|>|<","_", symbol)
+
 
     def get_functions(self):
         """
